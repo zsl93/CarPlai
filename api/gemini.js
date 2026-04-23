@@ -1,5 +1,4 @@
 export default async function handler(req, res) {
-  // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -7,19 +6,26 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { model, key, ...body } = req.body;
-    const geminiKey = key || process.env.GEMINI_API_KEY;
+    const body = req.body;
+    const model = body.model;
+    const key = body.key;
+    const geminiKey = (key && key.trim()) ? key.trim() : process.env.GEMINI_API_KEY;
 
     if (!geminiKey) {
-      return res.status(400).json({ error: { message: 'No Gemini API key provided' } });
+      return res.status(400).json({ error: { message: 'No Gemini API key. Tap API KEY in the app to add yours.' } });
     }
+
+    const geminiBody = {
+      contents: body.contents,
+      generationConfig: body.generationConfig,
+    };
 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
 
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+      body: JSON.stringify(geminiBody),
     });
 
     const data = await response.json();
