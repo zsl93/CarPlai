@@ -447,25 +447,31 @@ async function generate(){
   const notes=document.getElementById('notes').value.trim();
   const accList=accessories.map((a,i)=>`  - IMAGE ${i+2}: ${a.desc||'accessory '+(i+1)}`).join('\n');
 
-  const prompt=`You are a professional automotive photo editor. I am providing multiple images.
+  const prompt=`You are a professional automotive photo editor specialising in precise accessory fitting.
 
+I am providing multiple images:
 IMAGE 1: The car to modify — ${carDesc}
 ${accList}
 
-TASK: Edit IMAGE 1 to show the car with ALL the accessories from the other images realistically fitted. Each accessory should appear professionally installed in its correct location.
+YOUR TASK: Fit every accessory from the provided images onto the car in IMAGE 1.
 
-RULES:
-- Study each accessory image carefully — replicate exact design, colour, material, finish
-- Fit each accessory to its correct location (wheels→wheels, roof rack→roof, bull bar→front, etc.)
-- Keep the car body, paint, and background IDENTICAL to IMAGE 1
-- ALL accessories must appear simultaneously in the final image
-- Photorealistic result — must look like a real photograph
-- No text, no watermarks
+CRITICAL RULES FOR EACH ACCESSORY:
+- Copy the EXACT design from the reference image — every spoke, every bar, every detail
+- Do NOT redesign, simplify, or interpret the accessory — reproduce it precisely
+- The accessory colour, finish, and material must match the reference image exactly
+- Fit it to the correct location with proper scale and perspective for this car
+- Replace whatever is currently in that position on the car
+
+CAR RULES:
+- The car body, paint colour, panels, and background must stay IDENTICAL to IMAGE 1
+- Only the fitted accessories should change
+- Match lighting and shadows from IMAGE 1
+- Final result must look like a real unedited photograph
 
 Scene: ${selectedScene.desc}
-${notes?'Extra: '+notes:''}
+${notes?'Extra instructions: '+notes:''}
 
-Output one photorealistic image with all accessories fitted.`;
+Output ONE photorealistic image showing the car with ALL accessories fitted exactly as shown in the reference images.`;
 
   try {
     setLoading(
@@ -483,7 +489,7 @@ Output one photorealistic image with all accessories fitted.`;
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
-        model:'gemini-2.5-flash-image',
+        model:'gemini-3.1-flash-image-preview',
         key,
         contents:[{parts}],
         generationConfig:{responseModalities:['IMAGE','TEXT']}
