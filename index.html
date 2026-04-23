@@ -185,15 +185,9 @@
       <div id="acc-grid"></div>
     </div>
 
-    <!-- SCENE -->
-    <div>
-      <div class="sec-title">03 — Scene</div>
-      <div class="chips" id="scene-chips"></div>
-    </div>
-
     <!-- NOTES -->
     <div>
-      <div class="sec-title">Notes <span style="color:#333;font-size:9px">(OPTIONAL)</span></div>
+      <div class="sec-title">03 — Notes <span style="color:#333;font-size:9px">(OPTIONAL)</span></div>
       <textarea class="inp" id="notes" placeholder="e.g. keep exact background, photorealistic..."></textarea>
     </div>
 
@@ -254,18 +248,11 @@
 const API_URL = '/api/gemini';
 const MAX_ACC = 6;
 
-const SCENES = [
-  {id:'same',    label:'🔁 Same',     desc:'Keep the EXACT same background, lighting, and camera angle as the original car photo.'},
-  {id:'studio',  label:'🎬 Studio',   desc:'Clean white studio with professional automotive lighting and polished reflective floor.'},
-  {id:'outback', label:'🏜️ Outback',  desc:'Australian red dirt outback road with red rock formations and harsh midday sun.'},
-  {id:'street',  label:'🌆 Urban',    desc:'Urban city street at dusk with bokeh streetlights and wet reflective asphalt.'},
-  {id:'showroom',label:'🏢 Showroom', desc:'Luxury dark car showroom with dramatic overhead spotlights and polished epoxy floor.'},
-  {id:'sunset',  label:'🌅 Sunset',   desc:'Open highway at golden hour with dramatic orange sunset sky.'},
-];
+// Scenes removed — always keeps original background
 
 let carBase64=null, carMime='image/jpeg', carSrc=null;
 let accessories=[];
-let selectedScene=SCENES[0];
+// selectedScene removed
 let lastImgData=null;
 
 // Key management - stored in localStorage
@@ -295,15 +282,7 @@ document.getElementById('key-modal').addEventListener('click', e => {
   if(e.target === document.getElementById('key-modal')) document.getElementById('key-modal').classList.remove('open');
 });
 
-// Scene chips
-const sc = document.getElementById('scene-chips');
-SCENES.forEach(s => {
-  const b = document.createElement('button');
-  b.className='chip'+(s.id==='same'?' on':'');
-  b.textContent=s.label;
-  b.onclick=()=>{ selectedScene=s; document.querySelectorAll('#scene-chips .chip').forEach(x=>x.classList.remove('on')); b.classList.add('on'); };
-  sc.appendChild(b);
-});
+// Scene chips removed
 
 function toBase64(file) {
   return new Promise((resolve, reject) => {
@@ -461,17 +440,19 @@ IMAGE 2: The accessory to fit — ${accDesc}
 
 TASK: Edit IMAGE 1 to add the accessory from IMAGE 2 onto the car.
 
-CRITICAL RULES:
-- Copy the EXACT design from IMAGE 2 — every detail, colour, finish, material, shape
-- Do NOT redesign, simplify or interpret — reproduce it precisely as shown in IMAGE 2
-- Fit it to the correct location on the car with proper scale and perspective
-- Replace whatever is currently in that position on the car
-- Keep the car body, paint colour, and background IDENTICAL to IMAGE 1
-- Match the lighting direction and shadows from IMAGE 1
-- Output must look like a real unedited photograph — photorealistic
-- No text, no watermarks
+CRITICAL RULES — READ CAREFULLY:
+- IMAGE 2 is your EXACT reference — copy every spoke, bar, panel, hinge, colour and finish precisely
+- This is a COPY job not a creative job — do not add your own interpretation
+- If IMAGE 2 shows bronze wheels with 6 spokes, the output must show bronze wheels with exactly 6 spokes
+- If IMAGE 2 shows a black steel bull bar, the output must show that exact black steel bull bar
+- Fit the accessory to its correct mounting location with realistic scale and perspective
+- Replace whatever existing part is in that position — completely remove the original
+- The car body, paint colour, panels and background must stay PIXEL-PERFECT to IMAGE 1
+- Match all lighting, shadows and reflections from IMAGE 1
+- Final output must be indistinguishable from a real photograph
+- No text, no watermarks, no logos
 
-${isLast ? 'Scene: ' + selectedScene.desc : 'Keep the exact same background as IMAGE 1'}
+Keep the EXACT same background, environment, and lighting as IMAGE 1 — do not change the scene.
 ${notes && isLast ? 'Extra instructions: ' + notes : ''}
 
 Output ONE photorealistic image of the car with this accessory fitted exactly as shown.`;
@@ -508,8 +489,33 @@ Output ONE photorealistic image of the car with this accessory fitted exactly as
       }
 
       if(!gotImage){
-        const txt = resParts.find(p=>p.text);
-        throw new Error(txt ? 'No image on step '+(i+1)+': '+txt.text.slice(0,200) : 'No image returned on step '+(i+1));
+        // Retry once
+        console.log('Step '+(i+1)+' returned no image, retrying...');
+        const res2 = await fetch(API_URL, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            model: 'gemini-3.1-flash-image-preview',
+            key,
+            contents: [{parts}],
+            generationConfig: {responseModalities: ['IMAGE','TEXT']}
+          })
+        });
+        const data2 = await res2.json();
+        if(data2.error) throw new Error('Retry error: '+data2.error.message);
+        const retryParts = data2.candidates?.[0]?.content?.parts || [];
+        for(const part of retryParts){
+          if(part.inlineData?.data){
+            currentBase64 = part.inlineData.data;
+            currentMime = part.inlineData.mimeType || 'image/png';
+            gotImage = true;
+            break;
+          }
+        }
+        if(!gotImage){
+          const txt = retryParts.find(p=>p.text);
+          throw new Error(txt ? 'No image on step '+(i+1)+' after retry: '+txt.text.slice(0,150) : 'No image returned on step '+(i+1)+' after retry');
+        }
       }
     }
 
