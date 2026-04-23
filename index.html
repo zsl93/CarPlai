@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>MODVIZ — AI Car Accessory Visualiser</title>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: #06060e; color: #e0e0e0; font-family: 'Rajdhani', sans-serif; min-height: 100vh; min-height: -webkit-fill-available; display: flex; flex-direction: column; }
@@ -286,16 +285,19 @@ document.getElementById('key-modal').addEventListener('click', e => {
 // Scene chips removed
 
 async function toBase64(file) {
-  // Convert HEIC/HEIF to JPEG first
-  if (file.type === 'image/heic' || file.type === 'image/heif' ||
-      file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')) {
-    try {
-      const converted = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.85 });
-      file = Array.isArray(converted) ? converted[0] : converted;
-    } catch(e) {
-      console.warn('HEIC conversion failed, trying anyway:', e);
-    }
+  const isHeic = file.type === 'image/heic' || file.type === 'image/heif' ||
+    file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif');
+
+  if (isHeic) {
+    // Send to server for conversion
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch('/api/convert', { method: 'POST', body: formData });
+    if (!res.ok) throw new Error('HEIC conversion failed');
+    const blob = await res.blob();
+    file = new File([blob], 'converted.jpg', { type: 'image/jpeg' });
   }
+
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -310,7 +312,7 @@ async function toBase64(file) {
         }
         canvas.width = w; canvas.height = h;
         canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL('image/jpeg', 0.75));
+        resolve(canvas.toDataURL('image/jpeg', 0.85));
       };
       img.onerror = reject;
       img.src = e.target.result;
