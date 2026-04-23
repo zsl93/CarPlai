@@ -445,70 +445,86 @@ async function generate(){
 
   const carDesc=document.getElementById('car-desc').value.trim()||'the car in the photo';
   const notes=document.getElementById('notes').value.trim();
-  const accList=accessories.map((a,i)=>`  - IMAGE ${i+2}: ${a.desc||'accessory '+(i+1)}`).join('\n');
-
-  const prompt=`You are a professional automotive photo editor specialising in precise accessory fitting.
-
-I am providing multiple images:
-IMAGE 1: The car to modify — ${carDesc}
-${accList}
-
-YOUR TASK: Fit every accessory from the provided images onto the car in IMAGE 1.
-
-CRITICAL RULES FOR EACH ACCESSORY:
-- Copy the EXACT design from the reference image — every spoke, every bar, every detail
-- Do NOT redesign, simplify, or interpret the accessory — reproduce it precisely
-- The accessory colour, finish, and material must match the reference image exactly
-- Fit it to the correct location with proper scale and perspective for this car
-- Replace whatever is currently in that position on the car
-
-CAR RULES:
-- The car body, paint colour, panels, and background must stay IDENTICAL to IMAGE 1
-- Only the fitted accessories should change
-- Match lighting and shadows from IMAGE 1
-- Final result must look like a real unedited photograph
-
-Scene: ${selectedScene.desc}
-${notes?'Extra instructions: '+notes:''}
-
-Output ONE photorealistic image showing the car with ALL accessories fitted exactly as shown in the reference images.`;
 
   try {
-    setLoading(
-      `Fitting ${accessories.length} accessor${accessories.length>1?'ies':'y'}...`,
-      'Gemini Nano Banana is working — 20–40 seconds...'
-    );
+    let currentBase64 = carBase64;
+    let currentMime = carMime;
 
-    const parts=[
-      {text:prompt},
-      {inline_data:{mime_type:carMime,data:carBase64}},
-      ...accessories.map(a=>({inline_data:{mime_type:a.mime,data:a.base64}}))
-    ];
+    for(let i=0; i<accessories.length; i++){
+      const acc = accessories[i];
+      const accDesc = acc.desc || 'accessory '+(i+1);
+      const isLast = i === accessories.length - 1;
 
-    const res=await fetch(API_URL,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'gemini-3.1-flash-image-preview',
-        key,
-        contents:[{parts}],
-        generationConfig:{responseModalities:['IMAGE','TEXT']}
-      })
-    });
+      setLoading(
+        accessories.length === 1
+          ? 'Fitting '+accDesc+'...'
+          : 'Step '+(i+1)+' of '+accessories.length+': '+accDesc+'...',
+        'Gemini Nano Banana is working — 20–40 seconds...'
+      );
 
-    const data=await res.json();
-    if(data.error) throw new Error('Gemini '+data.error.code+': '+data.error.message);
+      const prompt = `You are a professional automotive photo editor.
 
-    const resParts=data.candidates?.[0]?.content?.parts||[];
-    for(const part of resParts){
-      if(part.inlineData?.data){
-        showResult('data:'+(part.inlineData.mimeType||'image/png')+';base64,'+part.inlineData.data);
-        return;
+IMAGE 1: The car — ${carDesc}
+IMAGE 2: The accessory to fit — ${accDesc}
+
+TASK: Edit IMAGE 1 to add the accessory from IMAGE 2 onto the car.
+
+CRITICAL RULES:
+- Copy the EXACT design from IMAGE 2 — every detail, colour, finish, material, shape
+- Do NOT redesign, simplify or interpret — reproduce it precisely as shown in IMAGE 2
+- Fit it to the correct location on the car with proper scale and perspective
+- Replace whatever is currently in that position on the car
+- Keep the car body, paint colour, and background IDENTICAL to IMAGE 1
+- Match the lighting direction and shadows from IMAGE 1
+- Output must look like a real unedited photograph — photorealistic
+- No text, no watermarks
+
+${isLast ? 'Scene: ' + selectedScene.desc : 'Keep the exact same background as IMAGE 1'}
+${notes && isLast ? 'Extra instructions: ' + notes : ''}
+
+Output ONE photorealistic image of the car with this accessory fitted exactly as shown.`;
+
+      const parts = [
+        {text: prompt},
+        {inline_data: {mime_type: currentMime, data: currentBase64}},
+        {inline_data: {mime_type: acc.mime, data: acc.base64}}
+      ];
+
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          model: 'gemini-3.1-flash-image-preview',
+          key,
+          contents: [{parts}],
+          generationConfig: {responseModalities: ['IMAGE','TEXT']}
+        })
+      });
+
+      const data = await res.json();
+      if(data.error) throw new Error('Gemini '+data.error.code+': '+data.error.message);
+
+      const resParts = data.candidates?.[0]?.content?.parts || [];
+      let gotImage = false;
+      for(const part of resParts){
+        if(part.inlineData?.data){
+          currentBase64 = part.inlineData.data;
+          currentMime = part.inlineData.mimeType || 'image/png';
+          gotImage = true;
+          break;
+        }
+      }
+
+      if(!gotImage){
+        const txt = resParts.find(p=>p.text);
+        throw new Error(txt ? 'No image on step '+(i+1)+': '+txt.text.slice(0,200) : 'No image returned on step '+(i+1));
       }
     }
-    const txt=resParts.find(p=>p.text);
-    throw new Error(txt?'No image — Gemini: '+txt.text.slice(0,200):'No image returned');
-  }catch(e){
+
+    // All accessories fitted — show final result
+    showResult('data:'+currentMime+';base64,'+currentBase64);
+
+  } catch(e){
     document.getElementById('loading-state').style.display='none';
     document.getElementById('empty-state').style.display='flex';
     showErr(e.message);
