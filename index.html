@@ -336,7 +336,7 @@ async function toBase64(file) {
       img.onload = () => {
         try {
           const canvas = document.createElement('canvas');
-          const MAX = 1024;
+          const MAX = 512;
           let w = img.width, h = img.height;
           if (w > MAX || h > MAX) {
             if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
@@ -344,7 +344,7 @@ async function toBase64(file) {
           }
           canvas.width = w; canvas.height = h;
           canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-          resolve(canvas.toDataURL('image/jpeg', 0.85));
+          resolve(canvas.toDataURL('image/jpeg', 0.7));
         } catch(canvasErr) {
           // Canvas failed — return the raw dataUrl as fallback
           console.warn('Canvas failed, using raw:', canvasErr);
@@ -525,49 +525,72 @@ async function generate(){
     let currentBase64 = carBase64;
     let currentMime = carMime;
 
-    for(let i=0; i<accessories.length; i++){
-      const acc = accessories[i];
-      const accDesc = acc.desc || 'accessory '+(i+1);
-      const isLast = i === accessories.length - 1;
+    // Build accessory list for prompt
+    const accList = accessories.map((a,i) =>
+      `IMAGE ${i+2}: ${a.desc || 'accessory '+(i+1)}`
+    ).join('\n');
 
-      setLoading(
-        accessories.length === 1
-          ? 'Fitting '+accDesc+'...'
-          : 'Step '+(i+1)+' of '+accessories.length+': '+accDesc+'...',
-        'Gemini Nano Banana is working — 20–40 seconds...'
-      );
+    setLoading(
+      accessories.length === 1 ? 'Fitting '+accessories[0].desc+'...' : 'Fitting all '+accessories.length+' accessories...',
+      'Gemini is working — 15–25 seconds...'
+    );
 
-      const prompt = `You are a professional automotive photo editor.
+    const prompt = `You are a professional automotive photo editor.
 
 IMAGE 1: The car — ${carDesc}
-IMAGE 2: The accessory to fit — ${accDesc}
+${accList}
 
-TASK: Edit IMAGE 1 to add the accessory from IMAGE 2 onto the car.
+TASK: Edit IMAGE 1 to add ALL the accessories from the other images onto the car simultaneously.
 
-CRITICAL RULES — READ CAREFULLY:
-- IMAGE 2 is your EXACT reference — copy every spoke, bar, panel, hinge, colour and finish precisely
-- This is a COPY job not a creative job — do not add your own interpretation
-- If IMAGE 2 shows bronze wheels with 6 spokes, the output must show bronze wheels with exactly 6 spokes
-- If IMAGE 2 shows a black steel bull bar, the output must show that exact black steel bull bar
-- Fit the accessory to its correct mounting location with realistic scale and perspective
-- Replace whatever existing part is in that position — completely remove the original
+CRITICAL RULES:
+- For EACH accessory image provided, copy its EXACT design — every spoke, bar, panel, colour and finish
+- This is a COPY job not a creative job — reproduce each accessory precisely as shown
+- Fit each accessory to its correct mounting location on the car
+- Replace whatever existing part is in that position
+- ALL accessories must appear in the final image at the same time
 - The car body, paint colour, panels and background must stay PIXEL-PERFECT to IMAGE 1
 - Match all lighting, shadows and reflections from IMAGE 1
 - Final output must be indistinguishable from a real photograph
 - No text, no watermarks, no logos
+- Keep the EXACT same background and environment as IMAGE 1
+${notes ? 'Extra instructions: ' + notes : ''}
 
-Keep the EXACT same background, environment, and lighting as IMAGE 1 — do not change the scene.
-${notes && isLast ? 'Extra instructions: ' + notes : ''}
+Output ONE photorealistic image of the car with ALL accessories fitted exactly as shown.`;
 
-Output ONE photorealistic image of the car with this accessory fitted exactly as shown.`;
+    const parts = [
+      {text: prompt},
+      {inline_data: {mime_type: currentMime, data: currentBase64}},
+      ...accessories.map(a => ({inline_data: {mime_type: a.mime, data: a.base64}}))
+    ];
 
-      const parts = [
-        {text: prompt},
-        {inline_data: {mime_type: currentMime, data: currentBase64}},
-        {inline_data: {mime_type: acc.mime, data: acc.base64}}
-      ];
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        model: 'gemini-3.1-flash-image-preview',
+        key,
+        contents: [{parts}],
+        generationConfig: {responseModalities: ['IMAGE','TEXT']}
+      })
+    });
 
-      const res = await fetch(API_URL, {
+    const data = await res.json();
+    if(data.error) throw new Error('Gemini '+data.error.code+': '+data.error.message);
+
+    const resParts = data.candidates?.[0]?.content?.parts || [];
+    let gotImage = false;
+    for(const part of resParts){
+      if(part.inlineData?.data){
+        currentBase64 = part.inlineData.data;
+        currentMime = part.inlineData.mimeType || 'image/png';
+        gotImage = true;
+        break;
+      }
+    }
+
+    if(!gotImage){
+      // Retry once
+      const res2 = await fetch(API_URL, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
@@ -577,13 +600,10 @@ Output ONE photorealistic image of the car with this accessory fitted exactly as
           generationConfig: {responseModalities: ['IMAGE','TEXT']}
         })
       });
-
-      const data = await res.json();
-      if(data.error) throw new Error('Gemini '+data.error.code+': '+data.error.message);
-
-      const resParts = data.candidates?.[0]?.content?.parts || [];
-      let gotImage = false;
-      for(const part of resParts){
+      const data2 = await res2.json();
+      if(data2.error) throw new Error('Retry error: '+data2.error.message);
+      const retryParts = data2.candidates?.[0]?.content?.parts || [];
+      for(const part of retryParts){
         if(part.inlineData?.data){
           currentBase64 = part.inlineData.data;
           currentMime = part.inlineData.mimeType || 'image/png';
@@ -591,35 +611,9 @@ Output ONE photorealistic image of the car with this accessory fitted exactly as
           break;
         }
       }
-
       if(!gotImage){
-        // Retry once
-        console.log('Step '+(i+1)+' returned no image, retrying...');
-        const res2 = await fetch(API_URL, {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({
-            model: 'gemini-3.1-flash-image-preview',
-            key,
-            contents: [{parts}],
-            generationConfig: {responseModalities: ['IMAGE','TEXT']}
-          })
-        });
-        const data2 = await res2.json();
-        if(data2.error) throw new Error('Retry error: '+data2.error.message);
-        const retryParts = data2.candidates?.[0]?.content?.parts || [];
-        for(const part of retryParts){
-          if(part.inlineData?.data){
-            currentBase64 = part.inlineData.data;
-            currentMime = part.inlineData.mimeType || 'image/png';
-            gotImage = true;
-            break;
-          }
-        }
-        if(!gotImage){
-          const txt = retryParts.find(p=>p.text);
-          throw new Error(txt ? 'No image on step '+(i+1)+' after retry: '+txt.text.slice(0,150) : 'No image returned on step '+(i+1)+' after retry');
-        }
+        const txt = retryParts.find(p=>p.text);
+        throw new Error(txt ? 'No image after retry: '+txt.text.slice(0,150) : 'No image returned');
       }
     }
 
@@ -686,3 +680,4 @@ Output a single image that is indistinguishable from a real photograph.`;
 </script>
 
 </body>
+</html>
