@@ -285,60 +285,62 @@ document.getElementById('key-modal').addEventListener('click', e => {
 // Scene chips removed
 
 async function toBase64(file) {
-  // Try createImageBitmap first — works natively in Safari iOS for HEIC
-  try {
-    const bitmap = await createImageBitmap(file);
-    const canvas = document.createElement('canvas');
-    const MAX = 1024;
-    let w = bitmap.width, h = bitmap.height;
-    if (w > MAX || h > MAX) {
-      if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
-      else { w = Math.round(w * MAX / h); h = MAX; }
-    }
-    canvas.width = w; canvas.height = h;
-    canvas.getContext('2d').drawImage(bitmap, 0, 0, w, h);
-    bitmap.close();
-    return canvas.toDataURL('image/jpeg', 0.85);
-  } catch(e) {
-    console.warn('createImageBitmap failed, falling back:', e);
-  }
+  // Show file info for debugging
+  console.log('File:', file.name, file.type, file.size);
 
-  // Fallback: FileReader + Image element
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (e) => {
+      const dataUrl = e.target.result;
       const img = new Image();
       img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const MAX = 1024;
-        let w = img.width, h = img.height;
-        if (w > MAX || h > MAX) {
-          if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
-          else { w = Math.round(w * MAX / h); h = MAX; }
+        try {
+          const canvas = document.createElement('canvas');
+          const MAX = 1024;
+          let w = img.width, h = img.height;
+          if (w > MAX || h > MAX) {
+            if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+            else { w = Math.round(w * MAX / h); h = MAX; }
+          }
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', 0.85));
+        } catch(canvasErr) {
+          // Canvas failed — return the raw dataUrl as fallback
+          console.warn('Canvas failed, using raw:', canvasErr);
+          resolve(dataUrl);
         }
-        canvas.width = w; canvas.height = h;
-        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL('image/jpeg', 0.85));
       };
-      img.onerror = () => reject(new Error('Could not load image. Try converting to JPEG first.'));
-      img.src = e.target.result;
+      img.onerror = (err) => {
+        console.warn('Image load failed, using raw dataUrl:', err);
+        // Return raw dataUrl even if image element can't display it
+        // The server may still be able to process it
+        resolve(dataUrl);
+      };
+      img.src = dataUrl;
     };
-    reader.onerror = reject;
+    reader.onerror = (e) => reject(new Error('File read failed: ' + e));
     reader.readAsDataURL(file);
   });
 }
 
 async function handleCarUpload(e) {
   const file=e.target.files[0]; if(!file) return;
-  const dataUrl=await toBase64(file);
-  carBase64=dataUrl.split(',')[1]; carMime=file.type||'image/jpeg'; carSrc=dataUrl;
-  const zone=document.getElementById('car-zone');
-  let img=zone.querySelector('img');
-  if(!img){img=document.createElement('img');zone.appendChild(img);}
-  img.src=dataUrl;
-  zone.classList.add('has-image');
-  zone.querySelectorAll('.up-icon,.up-text').forEach(el=>el.style.display='none');
-  checkReady();
+  try {
+    const dataUrl=await toBase64(file);
+    carBase64=dataUrl.split(',')[1]; 
+    carMime='image/jpeg'; 
+    carSrc=dataUrl;
+    const zone=document.getElementById('car-zone');
+    let img=zone.querySelector('img');
+    if(!img){img=document.createElement('img');zone.appendChild(img);}
+    img.src=dataUrl;
+    zone.classList.add('has-image');
+    zone.querySelectorAll('.up-icon,.up-text').forEach(el=>el.style.display='none');
+    checkReady();
+  } catch(err) {
+    showErr('Could not load photo: '+err.message+'. Try taking a screenshot of the photo and uploading that instead.');
+  }
 }
 
 function renderAccGrid() {
