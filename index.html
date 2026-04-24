@@ -277,7 +277,7 @@ async function compress(file) {
     reader.onload = e => {
       const img = new Image();
       img.onload = () => {
-        const MAX_PX = 1024;
+        const MAX_PX = 800;
         let w = img.width, h = img.height;
         if (w > MAX_PX || h > MAX_PX) {
           if (w > h) { h = Math.round(h * MAX_PX / w); w = MAX_PX; }
@@ -286,7 +286,7 @@ async function compress(file) {
         const canvas = document.createElement('canvas');
         canvas.width = w; canvas.height = h;
         canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL('image/jpeg', 0.85));
+        resolve(canvas.toDataURL('image/jpeg', 0.75));
       };
       img.onerror = () => resolve(e.target.result);
       img.src = e.target.result;
@@ -416,11 +416,14 @@ function initSlider() {
     const rect = wrap.getBoundingClientRect();
     let pct = (x - rect.left) / rect.width;
     pct = Math.max(0.02, Math.min(0.98, pct));
-    afterPanel.style.width = (pct * 100) + '%';
-    handle.style.left = (pct * 100) + '%';
+    // after panel reveals from the right as handle moves right
+    afterPanel.style.width = ((1 - pct) * 100) + '%';
+    afterPanel.style.right = '0';
+    afterPanel.style.left = 'auto';
+    newHandle.style.left = (pct * 100) + '%';
   }
 
-  // Remove old listeners
+  // Remove old listeners by cloning
   const newHandle = handle.cloneNode(true);
   handle.parentNode.replaceChild(newHandle, handle);
 
@@ -431,7 +434,10 @@ function initSlider() {
   window.addEventListener('touchmove', e => { if (dragging) setPos(e.touches[0].clientX); }, { passive: true });
   window.addEventListener('touchend', () => { dragging = false; });
 
+  // Start at 50%
   afterPanel.style.width = '50%';
+  afterPanel.style.right = '0';
+  afterPanel.style.left = 'auto';
   newHandle.style.left = '50%';
 }
 
@@ -462,7 +468,7 @@ async function generate() {
 
       setLoading(
         accessories.length === 1 ? 'Fitting ' + accDesc + '...' : 'Step ' + (i+1) + ' of ' + accessories.length + ': ' + accDesc + '...',
-        'Gemini is working — 15–30 seconds...'
+        'Fast rendering in progress...'
       );
 
       const prompt = `You are a professional automotive photo editor.
@@ -496,7 +502,7 @@ Output ONE photorealistic image with this accessory fitted exactly.`;
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'gemini-3.1-flash-image-preview',
+          model: 'gemini-2.5-flash-image',
           key,
           contents: [{ parts }],
           generationConfig: { responseModalities: ['IMAGE', 'TEXT'] }
@@ -518,7 +524,7 @@ Output ONE photorealistic image with this accessory fitted exactly.`;
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            model: 'gemini-3.1-flash-image-preview',
+            model: 'gemini-2.5-flash-image',
             key,
             contents: [{ parts }],
             generationConfig: { responseModalities: ['IMAGE', 'TEXT'] }
@@ -535,13 +541,13 @@ Output ONE photorealistic image with this accessory fitted exactly.`;
 
     // Polish pass for 3+ accessories
     if (accessories.length >= 3) {
-      setLoading('Final polish pass...', 'Restoring photorealism...');
+      setLoading('Final polish pass...', 'Final quality pass...');
       try {
         const polishRes = await fetch(PROXY + '/api/gemini', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            model: 'gemini-3.1-flash-image-preview',
+            model: 'gemini-2.5-flash-image',
             key,
             contents: [{ parts: [
               { text: 'You are a professional photo retoucher. This image was created by AI compositing. Make it look like a real unedited photograph — fix any artificial lighting, inconsistent shadows, soft edges, or AI-generated look. Keep the car, accessories, and background completely identical. Output one photorealistic image.' },
