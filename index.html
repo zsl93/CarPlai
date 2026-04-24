@@ -138,10 +138,10 @@ textarea.inp { min-height: 56px; resize: vertical; }
 
 /* SLIDER */
 #slider-wrap { display: flex; flex-direction: column; gap: 0; margin-bottom: 12px; }
-#slider-container { position: relative; overflow: hidden; border-radius: 6px; border: 1px solid #1a1a2e; background: #000; user-select: none; touch-action: none; }
-#slider-container img { width: 100%; display: block; max-height: 62vh; object-fit: contain; }
-#before-panel { position: absolute; inset: 0; overflow: hidden; width: 50%; }
-#before-panel img { width: 100%; max-height: 62vh; object-fit: contain; position: absolute; top: 0; left: 0; }
+#slider-container { position: relative; overflow: hidden; border-radius: 6px; border: 1px solid #1a1a2e; background: #000; user-select: none; touch-action: none; width: 100%; }
+#before-img { width: 100%; display: block; height: auto; }
+#after-panel { position: absolute; top: 0; right: 0; bottom: 0; overflow: hidden; width: 50%; }
+#after-panel img { position: absolute; top: 0; right: 0; width: var(–container-width, 100%); height: var(–container-height, 100%); object-fit: contain; background: #000; }
 #slider-handle { position: absolute; top: 0; bottom: 0; left: 50%; transform: translateX(-50%); width: 44px; cursor: ew-resize; display: flex; align-items: center; justify-content: center; z-index: 10; }
 #slider-line { position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; background: #e63a00; transform: translateX(-50%); }
 #slider-btn { width: 36px; height: 36px; background: #e63a00; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 12px rgba(0,0,0,.5); z-index: 1; flex-shrink: 0; }
@@ -247,9 +247,9 @@ textarea.inp { min-height: 56px; resize: vertical; }
   <!-- BEFORE/AFTER SLIDER -->
   <div id="slider-wrap">
     <div id="slider-container">
-      <img id="after-img" src="" alt="After"/>
-      <div id="before-panel">
-        <img id="before-img" src="" alt="Before"/>
+      <img id="before-img" src="" alt="Before"/>
+      <div id="after-panel">
+        <img id="after-img" src="" alt="After"/>
       </div>
       <div id="slider-handle">
         <div id="slider-line"></div>
@@ -456,6 +456,7 @@ function showResult(imgData){
   document.getElementById('result-state').style.display='flex';
   document.getElementById('before-img').src=carSrc;
   document.getElementById('after-img').src=imgData;
+  document.getElementById('after-panel').style.width='50%';
   document.getElementById('result-title').textContent=carDesc;
   const tags=document.getElementById('result-tags');
   tags.innerHTML=accessories.map(a=>`<span class="rtag">${a.desc||'Accessory'}</span>`).join('');
@@ -467,28 +468,54 @@ function showResult(imgData){
 function initSlider(){
   const container = document.getElementById('slider-container');
   const beforePanel = document.getElementById('before-panel');
+  const beforeImg = document.getElementById('before-img');
+  const afterImg = document.getElementById('after-img');
   const handle = document.getElementById('slider-handle');
   let dragging = false;
+
+  const afterPanel = document.getElementById('after-panel');
+
+  // Sync after panel image dimensions to base image
+  function syncDimensions(){
+    const w = beforeImg.offsetWidth;
+    const h = beforeImg.offsetHeight;
+    if(w && h){
+      container.style.setProperty('--container-width', w + 'px');
+      container.style.setProperty('--container-height', h + 'px');
+      afterPanel.style.height = h + 'px';
+      afterImg.style.width = w + 'px';
+      afterImg.style.height = h + 'px';
+    }
+  }
+
+  beforeImg.onload = syncDimensions;
+  afterImg.onload = syncDimensions;
+  if(beforeImg.complete) syncDimensions();
+  window.addEventListener('resize', syncDimensions);
 
   function setPosition(x){
     const rect = container.getBoundingClientRect();
     let pct = (x - rect.left) / rect.width;
     pct = Math.max(0.02, Math.min(0.98, pct));
-    beforePanel.style.width = (pct * 100) + '%';
+    // after-panel clips from right, so its width = right portion
+    afterPanel.style.width = ((1 - pct) * 100) + '%';
     handle.style.left = (pct * 100) + '%';
   }
 
-  handle.addEventListener('mousedown', e => { dragging=true; e.preventDefault(); });
+  // Remove old listeners by cloning handle
+  const newHandle = handle.cloneNode(true);
+  handle.parentNode.replaceChild(newHandle, handle);
+
+  newHandle.addEventListener('mousedown', e => { dragging=true; e.preventDefault(); });
   window.addEventListener('mousemove', e => { if(dragging) setPosition(e.clientX); });
   window.addEventListener('mouseup', () => { dragging=false; });
-
-  handle.addEventListener('touchstart', e => { dragging=true; e.preventDefault(); }, {passive:false});
+  newHandle.addEventListener('touchstart', e => { dragging=true; e.preventDefault(); }, {passive:false});
   window.addEventListener('touchmove', e => { if(dragging) setPosition(e.touches[0].clientX); }, {passive:true});
   window.addEventListener('touchend', () => { dragging=false; });
 
-  // Reset to 50%
-  beforePanel.style.width = '50%';
-  handle.style.left = '50%';
+  // Start at 50% — right half shows after
+  afterPanel.style.width = '50%';
+  newHandle.style.left = '50%';
 }
 
 function saveImage(){
