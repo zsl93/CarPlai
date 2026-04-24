@@ -140,8 +140,8 @@ textarea.inp { min-height: 56px; resize: vertical; }
 #slider-wrap { display: flex; flex-direction: column; gap: 0; margin-bottom: 12px; }
 #slider-container { position: relative; overflow: hidden; border-radius: 6px; border: 1px solid #1a1a2e; background: #000; user-select: none; touch-action: none; width: 100%; }
 #before-img { width: 100%; display: block; height: auto; }
-#after-panel { position: absolute; inset: 0; }
-#after-panel img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; background: #000; clip-path: inset(0 50% 0 0); }
+#after-panel { position: absolute; top: 0; left: 0; bottom: 0; overflow: hidden; width: 50%; }
+#after-panel img { position: absolute; top: 0; left: 0; width: var(–slider-w, 100%); height: 100%; max-width: none; object-fit: cover; }
 #slider-handle { position: absolute; top: 0; bottom: 0; left: 50%; transform: translateX(-50%); width: 44px; cursor: ew-resize; display: flex; align-items: center; justify-content: center; z-index: 10; }
 #slider-line { position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; background: #e63a00; transform: translateX(-50%); }
 #slider-btn { width: 36px; height: 36px; background: #e63a00; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 12px rgba(0,0,0,.5); z-index: 1; flex-shrink: 0; }
@@ -205,13 +205,23 @@ textarea.inp { min-height: 56px; resize: vertical; }
 
 <!-- ACCESSORIES -->
 <div>
-  <div class="sec-title">02 — Accessories <span style="color:#333;font-size:9px">(UP TO 3)</span></div>
+  <div class="sec-title">02 — Accessories <span style="color:#333;font-size:9px">(UP TO 5)</span></div>
   <div id="acc-grid"></div>
+</div>
+
+<!-- LIFT -->
+<div>
+  <div class="sec-title">03 — Suspension <span style="color:#333;font-size:9px">(OPTIONAL)</span></div>
+  <div class="chips" id="lift-chips">
+    <button class="chip" id="lift-2" onclick="selectLift('2inch')">📐 2" Lift</button>
+    <button class="chip" id="lift-4" onclick="selectLift('4inch')">📐 4" Lift</button>
+    <button class="chip" id="lift-coil" onclick="selectLift('coilovers')">🔧 Coilovers</button>
+  </div>
 </div>
 
 <!-- NOTES -->
 <div>
-  <div class="sec-title">03 — Notes <span style="color:#333;font-size:9px">(OPTIONAL)</span></div>
+  <div class="sec-title">04 — Notes <span style="color:#333;font-size:9px">(OPTIONAL)</span></div>
   <textarea class="inp" id="notes" placeholder="e.g. keep exact background, photorealistic..."></textarea>
 </div>
 
@@ -286,7 +296,7 @@ textarea.inp { min-height: 56px; resize: vertical; }
 
 <script>
 const API_URL = '/api/gemini';
-const MAX_ACC = 3;
+const MAX_ACC = 5;
 
 // Scenes removed — always keeps original background
 
@@ -427,15 +437,35 @@ function editAcc(i) {
 renderAccGrid();
 loadKey();
 
+// Lift selection
+let selectedLift = null;
+const LIFT_PROMPTS = {
+  '2inch': '2-inch suspension lift kit — raise the ride height by 2 inches, increase the gap between tyres and wheel arches, maintain factory wheel and tyre size',
+  '4inch': '4-inch suspension lift kit — dramatically raise the ride height by 4 inches, significantly increase the gap between tyres and wheel arches, the car sits noticeably higher',
+  'coilovers': 'coilover suspension lowering kit — lower the ride height, reduce the gap between tyres and wheel arches, slammed aggressive stance'
+};
+
+function selectLift(type) {
+  if(selectedLift === type) {
+    selectedLift = null;
+    document.querySelectorAll('#lift-chips .chip').forEach(c => c.classList.remove('on'));
+  } else {
+    selectedLift = type;
+    document.querySelectorAll('#lift-chips .chip').forEach(c => c.classList.remove('on'));
+    document.getElementById('lift-'+type.replace('inch','')).classList.add('on');
+  }
+  checkReady();
+}
+
 function checkReady() {
   const k=localStorage.getItem('modviz_gemini_key')||'';
-  const ready=k&&carBase64&&accessories.length>0;
+  const ready=k&&carBase64&&(accessories.length>0||selectedLift);
   document.getElementById('gen-btn').disabled=!ready;
   const hint=document.getElementById('hint');
   if(ready){hint.style.display='none';}
   else{
     hint.style.display='block';
-    hint.textContent=!k?'Tap ⚙ API KEY above to add your Gemini key':!carBase64?'Upload a photo of your car':'Upload at least one accessory photo';
+    hint.textContent=!k?'Tap ⚙ API KEY above to add your Gemini key':!carBase64?'Upload a photo of your car':'Upload at least one accessory or select a suspension option';
   }
 }
 
@@ -473,13 +503,23 @@ function initSlider(){
   const handle = document.getElementById('slider-handle');
   let dragging = false;
 
+  const afterPanel = document.getElementById('after-panel');
+
+  function syncWidth(){
+    const w = container.offsetWidth;
+    container.style.setProperty('--slider-w', w + 'px');
+    afterImg.style.width = w + 'px';
+  }
+  syncWidth();
+  window.addEventListener('resize', syncWidth);
+  afterImg.onload = syncWidth;
+
   function setPosition(x){
     const rect = container.getBoundingClientRect();
     let pct = (x - rect.left) / rect.width;
     pct = Math.max(0.02, Math.min(0.98, pct));
-    const rightPct = Math.round((1 - pct) * 100);
-    afterImg.style.clipPath = 'inset(0 ' + rightPct + '% 0 0)';
-    handle.style.left = (pct * 100) + '%';
+    afterPanel.style.width = (pct * 100) + '%';
+    newHandle.style.left = (pct * 100) + '%';
   }
 
   // Remove old listeners by cloning handle
@@ -494,7 +534,7 @@ function initSlider(){
   window.addEventListener('touchend', () => { dragging=false; });
 
   // Start at 50%
-  afterImg.style.clipPath = 'inset(0 50% 0 0)';
+  afterPanel.style.width = '50%';
   newHandle.style.left = '50%';
 }
 
@@ -610,6 +650,57 @@ Output ONE photorealistic image of the car with this accessory fitted exactly as
           const txt = retryParts.find(p=>p.text);
           throw new Error(txt ? 'No image on step '+(i+1)+' after retry: '+txt.text.slice(0,150) : 'No image returned on step '+(i+1)+' after retry');
         }
+      }
+    }
+
+    // Lift pass — if suspension option selected
+    if(selectedLift){
+      setLoading(
+        selectedLift === 'coilovers' ? 'Lowering on coilovers...' : 'Fitting ' + (selectedLift === '2inch' ? '2"' : '4"') + ' lift kit...',
+        'Adjusting ride height — 20–40 seconds...'
+      );
+
+      const liftPrompt = `You are a professional automotive photo editor.
+
+IMAGE 1: The car — ${carDesc}
+
+TASK: Modify the car's suspension to show a ${LIFT_PROMPTS[selectedLift]}.
+
+RULES:
+- Adjust the ride height realistically — change the gap between the tyre and wheel arch
+- Keep all other aspects of the car IDENTICAL — same body, paint, background, lighting
+- The result must look like a real photograph — no CGI or illustration look
+- No text, no watermarks
+
+Output ONE photorealistic image with the suspension modification applied.`;
+
+      try {
+        const liftRes = await fetch(API_URL, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            model: 'gemini-3.1-flash-image-preview',
+            key,
+            contents: [{parts: [
+              {text: liftPrompt},
+              {inline_data: {mime_type: currentMime, data: currentBase64}}
+            ]}],
+            generationConfig: {responseModalities: ['IMAGE','TEXT']}
+          })
+        });
+        const liftData = await liftRes.json();
+        if(!liftData.error){
+          const liftParts = liftData.candidates?.[0]?.content?.parts || [];
+          for(const part of liftParts){
+            if(part.inlineData?.data){
+              currentBase64 = part.inlineData.data;
+              currentMime = part.inlineData.mimeType || 'image/png';
+              break;
+            }
+          }
+        }
+      } catch(e){
+        console.warn('Lift pass failed:', e);
       }
     }
 
