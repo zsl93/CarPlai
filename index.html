@@ -81,7 +81,7 @@
 #add-slot-btn:hover { border-color: #444; color: #666; }
 
 /* INPUTS */
-.inp { background: #f8f8f8; border: 1px solid #ddd; border-radius: 3px; color: #e0e0e0; font-family: ‘Barlow’, sans-serif; font-size: 13px; padding: 8px 11px; width: 100%; outline: none; transition: border-color .2s; }
+.inp { background: #0e0e1c; border: 1px solid #1c1c2e; border-radius: 3px; color: #e0e0e0; font-family: ‘Barlow’, sans-serif; font-size: 13px; padding: 8px 11px; width: 100%; outline: none; transition: border-color .2s; }
 .inp:focus { border-color: #e63a00; }
 .inp::placeholder { color: #222230; }
 textarea.inp { min-height: 56px; resize: vertical; }
@@ -545,7 +545,7 @@ function saveImage(){
 
 async function generate(){
   const key=localStorage.getItem('modviz_gemini_key')||'';
-  if(!key||!carBase64||accessories.length===0)return;
+  if(!key||!carBase64||(accessories.length===0&&!selectedLift))return;
   hideErr();
 
   const carDesc=document.getElementById('car-desc').value.trim()||'the car in the photo';
