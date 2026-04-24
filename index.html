@@ -135,7 +135,23 @@
   .rbtn.save { background: #e63a00; color: #fff; }
   .rbtn.var { background: rgba(255,255,255,.1); color: #aaa; border: 1px solid rgba(255,255,255,.15); }
 
-  #again-btn { background: linear-gradient(135deg,#e63a00,#b82400); color:#fff; border:none; border-radius:3px; padding:12px; font-family:'Rajdhani',sans-serif; font-size:14px; font-weight:700; letter-spacing:3px; text-transform:uppercase; cursor:pointer; width:100%; }
+  /* SLIDER */
+#slider-wrap { display: flex; flex-direction: column; gap: 0; margin-bottom: 12px; }
+#slider-container { position: relative; overflow: hidden; border-radius: 6px; border: 1px solid #1a1a2e; background: #000; user-select: none; touch-action: none; }
+#slider-container img { width: 100%; display: block; max-height: 62vh; object-fit: contain; }
+#before-panel { position: absolute; inset: 0; overflow: hidden; width: 50%; }
+#before-panel img { width: 100%; max-height: 62vh; object-fit: contain; position: absolute; top: 0; left: 0; }
+#slider-handle { position: absolute; top: 0; bottom: 0; left: 50%; transform: translateX(-50%); width: 44px; cursor: ew-resize; display: flex; align-items: center; justify-content: center; z-index: 10; }
+#slider-line { position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; background: #e63a00; transform: translateX(-50%); }
+#slider-btn { width: 36px; height: 36px; background: #e63a00; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 12px rgba(0,0,0,.5); z-index: 1; flex-shrink: 0; }
+#slider-arrows { color: white; font-size: 16px; font-weight: 700; line-height: 1; }
+.slider-lbl { position: absolute; top: 10px; background: rgba(0,0,0,.75); color: #aaa; font-size: 9px; font-weight: 700; letter-spacing: 2px; padding: 4px 8px; border-radius: 2px; text-transform: uppercase; font-family: 'Rajdhani',sans-serif; }
+.slider-lbl.after { color: #fff; background: rgba(230,58,0,.9); }
+#lbl-before { left: 10px; }
+#lbl-after { right: 10px; }
+#result-bar { padding: 14px 16px; background: #0a0a14; border: 1px solid #1a1a2e; border-top: none; border-radius: 0 0 6px 6px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+
+#again-btn { background: linear-gradient(135deg,#e63a00,#b82400); color:#fff; border:none; border-radius:3px; padding:12px; font-family:'Rajdhani',sans-serif; font-size:14px; font-weight:700; letter-spacing:3px; text-transform:uppercase; cursor:pointer; width:100%; }
 
   #footer { border-top: 1px solid #0d0d1a; padding: 8px 20px; display: flex; justify-content: space-between; font-size: 10px; color: #141422; font-family: 'Barlow', sans-serif; flex-shrink: 0; }
 </style>
@@ -221,23 +237,35 @@
     </div>
 
     <div id="result-state">
-      <div id="comparison">
-        <div class="comp-wrap"><img id="before-img" src="" alt="Before"/><div class="comp-lbl">BEFORE</div></div>
-        <div class="comp-wrap"><img id="after-small" src="" alt="After"/><div class="comp-lbl after">AFTER</div></div>
-      </div>
-      <div id="result-main">
-        <img id="result-img" src="" alt="Result"/>
+
+      <!-- BEFORE/AFTER SLIDER -->
+      <div id="slider-wrap">
+        <div id="slider-container">
+          <img id="after-img" src="" alt="After"/>
+          <div id="before-panel">
+            <img id="before-img" src="" alt="Before"/>
+          </div>
+          <div id="slider-handle">
+            <div id="slider-line"></div>
+            <div id="slider-btn">
+              <span id="slider-arrows">&#8644;</span>
+            </div>
+          </div>
+          <div class="slider-lbl" id="lbl-before">BEFORE</div>
+          <div class="slider-lbl after" id="lbl-after">AFTER</div>
+        </div>
         <div id="result-bar">
           <div>
             <div id="result-title"></div>
             <div id="result-tags"></div>
           </div>
           <div class="rbtns">
-            <button class="rbtn var" onclick="generate()">↺</button>
+            <button class="rbtn var" onclick="generate()">↺ Variation</button>
             <button class="rbtn save" onclick="saveImage()">↓ Save</button>
           </div>
         </div>
       </div>
+
       <button id="again-btn" onclick="generate()">⚡ GENERATE ANOTHER VARIATION</button>
     </div>
   </div>
@@ -419,14 +447,40 @@ function showResult(imgData){
   document.getElementById('loading-state').style.display='none';
   document.getElementById('result-state').style.display='flex';
   document.getElementById('before-img').src=carSrc;
-  document.getElementById('after-small').src=imgData;
-  document.getElementById('result-img').src=imgData;
+  document.getElementById('after-img').src=imgData;
   document.getElementById('result-title').textContent=carDesc;
   const tags=document.getElementById('result-tags');
   tags.innerHTML=accessories.map(a=>`<span class="rtag">${a.desc||'Accessory'}</span>`).join('');
   lastImgData=imgData;
-  // Scroll to result on mobile
+  initSlider();
   document.getElementById('right').scrollIntoView({behavior:'smooth'});
+}
+
+function initSlider(){
+  const container = document.getElementById('slider-container');
+  const beforePanel = document.getElementById('before-panel');
+  const handle = document.getElementById('slider-handle');
+  let dragging = false;
+
+  function setPosition(x){
+    const rect = container.getBoundingClientRect();
+    let pct = (x - rect.left) / rect.width;
+    pct = Math.max(0.02, Math.min(0.98, pct));
+    beforePanel.style.width = (pct * 100) + '%';
+    handle.style.left = (pct * 100) + '%';
+  }
+
+  handle.addEventListener('mousedown', e => { dragging=true; e.preventDefault(); });
+  window.addEventListener('mousemove', e => { if(dragging) setPosition(e.clientX); });
+  window.addEventListener('mouseup', () => { dragging=false; });
+
+  handle.addEventListener('touchstart', e => { dragging=true; e.preventDefault(); }, {passive:false});
+  window.addEventListener('touchmove', e => { if(dragging) setPosition(e.touches[0].clientX); }, {passive:true});
+  window.addEventListener('touchend', () => { dragging=false; });
+
+  // Reset to 50%
+  beforePanel.style.width = '50%';
+  handle.style.left = '50%';
 }
 
 function saveImage(){
