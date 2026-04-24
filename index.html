@@ -502,7 +502,7 @@ Output ONE photorealistic image with this accessory fitted exactly.`;
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'gemini-2.5-flash-image',
+          model: 'gemini-3.1-flash-image-preview',
           key,
           contents: [{ parts }],
           generationConfig: { responseModalities: ['IMAGE', 'TEXT'] }
@@ -524,7 +524,7 @@ Output ONE photorealistic image with this accessory fitted exactly.`;
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            model: 'gemini-2.5-flash-image',
+            model: 'gemini-3.1-flash-image-preview',
             key,
             contents: [{ parts }],
             generationConfig: { responseModalities: ['IMAGE', 'TEXT'] }
@@ -547,7 +547,7 @@ Output ONE photorealistic image with this accessory fitted exactly.`;
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            model: 'gemini-2.5-flash-image',
+            model: 'gemini-3.1-flash-image-preview',
             key,
             contents: [{ parts: [
               { text: 'You are a professional photo retoucher. This image was created by AI compositing. Make it look like a real unedited photograph — fix any artificial lighting, inconsistent shadows, soft edges, or AI-generated look. Keep the car, accessories, and background completely identical. Output one photorealistic image.' },
