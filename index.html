@@ -213,9 +213,9 @@ textarea.inp { min-height: 56px; resize: vertical; }
 <div>
   <div class="sec-title">03 — Suspension <span style="color:#333;font-size:9px">(OPTIONAL)</span></div>
   <div class="chips" id="lift-chips">
-    <button class="chip" id="lift-2" onclick="selectLift('2inch')">📐 2" Lift</button>
-    <button class="chip" id="lift-4" onclick="selectLift('4inch')">📐 4" Lift</button>
-    <button class="chip" id="lift-coil" onclick="selectLift('coilovers')">🔧 Coilovers</button>
+    <button class="chip" id="lift-2inch" onclick="selectLift('2inch')">📐 2" Lift</button>
+    <button class="chip" id="lift-4inch" onclick="selectLift('4inch')">📐 4" Lift</button>
+    <button class="chip" id="lift-coilovers" onclick="selectLift('coilovers')">⬇ Lowered</button>
   </div>
 </div>
 
@@ -440,9 +440,9 @@ loadKey();
 // Lift selection
 let selectedLift = null;
 const LIFT_PROMPTS = {
-  '2inch': '2-inch suspension lift kit — raise the ride height by 2 inches, increase the gap between tyres and wheel arches, maintain factory wheel and tyre size',
-  '4inch': '4-inch suspension lift kit — dramatically raise the ride height by 4 inches, significantly increase the gap between tyres and wheel arches, the car sits noticeably higher',
-  'coilovers': 'coilover suspension lowering kit — lower the ride height, reduce the gap between tyres and wheel arches, slammed aggressive stance'
+  '2inch': 'a 2-inch suspension lift kit has been installed. The car body sits 2 inches higher off the ground. There is a clearly visible gap between the top of each tyre and the wheel arch — approximately 2 inches of extra space. The chassis is raised. The suspension components are stretched. The overall stance is taller. This is a subtle but clearly noticeable height increase.',
+  '4inch': 'a 4-inch suspension lift kit has been installed. The car body sits dramatically higher off the ground. There is a very large, clearly visible gap between the top of each tyre and the wheel arch — approximately 4 inches of extra space. The chassis is significantly raised. The car has a tall, commanding off-road stance. The height difference is very obvious and dramatic.',
+  'coilovers': 'coilover lowering springs have been installed. The car body sits very low to the ground. The gap between the top of each tyre and the wheel arch is minimal — almost no space visible. The car has an aggressive slammed stance. The chassis nearly skims the ground. This is a dramatic lowering that makes the car look wide and planted.'
 };
 
 function selectLift(type) {
@@ -452,7 +452,7 @@ function selectLift(type) {
   } else {
     selectedLift = type;
     document.querySelectorAll('#lift-chips .chip').forEach(c => c.classList.remove('on'));
-    document.getElementById('lift-'+type.replace('inch','')).classList.add('on');
+    document.getElementById('lift-'+type).classList.add('on');
   }
   checkReady();
 }
@@ -660,19 +660,23 @@ Output ONE photorealistic image of the car with this accessory fitted exactly as
         'Adjusting ride height — 20–40 seconds...'
       );
 
-      const liftPrompt = `You are a professional automotive photo editor.
+      const liftPrompt = `You are a professional automotive photo editor specialising in suspension modifications.
 
 IMAGE 1: The car — ${carDesc}
 
-TASK: Modify the car's suspension to show a ${LIFT_PROMPTS[selectedLift]}.
+TASK: Edit this photo to show that ${LIFT_PROMPTS[selectedLift]}
 
-RULES:
-- Adjust the ride height realistically — change the gap between the tyre and wheel arch
-- Keep all other aspects of the car IDENTICAL — same body, paint, background, lighting
-- The result must look like a real photograph — no CGI or illustration look
-- No text, no watermarks
+CRITICAL VISUAL REQUIREMENTS:
+- The space between the TOP of each tyre and the wheel arch MUST be visibly changed
+- Raise or lower the entire car body relative to the tyres and ground
+- The tyres and wheels stay in the same position on the ground
+- The body moves up or down — creating more or less arch gap
+- Adjust the visible suspension components (springs, shock absorbers) accordingly
+- The background, ground, and everything outside the car stays IDENTICAL
+- Car paint, body panels, and all accessories stay IDENTICAL
+- The result must look like a real unedited photograph
 
-Output ONE photorealistic image with the suspension modification applied.`;
+Output ONE photorealistic image showing the suspension change clearly.`;
 
       try {
         const liftRes = await fetch(API_URL, {
