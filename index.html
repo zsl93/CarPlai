@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -10,131 +9,140 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: #06060e; color: #e0e0e0; font-family: 'Rajdhani', sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
 ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-thumb { background: #e63a00; border-radius: 2px; }
-
-/* TOPBAR */
 #topbar { background: #08080f; border-bottom: 1px solid #111; padding: 0 20px; height: 54px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; flex-shrink: 0; }
 .logo { display: flex; align-items: center; gap: 10px; }
-.logo-box { width: 36px; height: 36px; background: #e63a00; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-family: ‘Barlow’, sans-serif; font-size: 13px; font-weight: 800; color: #fff; flex-shrink: 0; }
+.logo-box { width: 36px; height: 36px; background: #e63a00; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 800; color: #fff; flex-shrink: 0; }
 .logo-name { display: flex; flex-direction: column; gap: 1px; }
-.logo-word { font-family: ‘Barlow’, sans-serif; font-size: 22px; line-height: 1; }
+.logo-word { font-family: 'Barlow', sans-serif; font-size: 22px; line-height: 1; }
 .logo-word span.grey { font-weight: 600; color: #e0e0e0; }
 .logo-word span.orange { font-weight: 900; color: #e63a00; font-size: 28px; }
-.logo-sub { font-size: 8px; color: #333; letter-spacing: 3px; font-family: ‘Barlow’, sans-serif; text-transform: uppercase; }
-#key-btn { background: none; border: 1px solid #1c1c2e; border-radius: 3px; color: #555; cursor: pointer; font-family: ‘Rajdhani’, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 2px; padding: 6px 12px; transition: all .2s; }
+.logo-sub { font-size: 8px; color: #333; letter-spacing: 3px; font-family: 'Barlow', sans-serif; text-transform: uppercase; }
+#key-btn { background: none; border: 1px solid #1c1c2e; border-radius: 3px; color: #555; cursor: pointer; font-family: 'Rajdhani', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 2px; padding: 6px 12px; transition: all .2s; }
 #key-btn:hover { border-color: #e63a00; color: #e63a00; }
 #key-btn.ok { border-color: rgba(0,200,122,.4); color: #00c87a; }
-
-/* KEY MODAL */
 #key-modal { position: fixed; inset: 0; background: rgba(0,0,0,.85); z-index: 500; display: none; align-items: center; justify-content: center; padding: 20px; }
 #key-modal.open { display: flex; }
 .key-box { background: #0e0e1c; border: 1px solid #1c1c2e; border-radius: 8px; padding: 28px; width: 100%; max-width: 400px; }
 .key-title { font-size: 13px; font-weight: 700; letter-spacing: 3px; color: #e63a00; text-transform: uppercase; margin-bottom: 6px; }
-.key-sub { font-size: 12px; color: #444; font-family: ‘Barlow’, sans-serif; margin-bottom: 16px; line-height: 1.6; }
+.key-sub { font-size: 12px; color: #444; font-family: 'Barlow', sans-serif; margin-bottom: 16px; line-height: 1.6; }
 .key-sub a { color: #e63a00; }
 #gemini-key { background: #080812; border: 1px solid #1c1c2e; border-radius: 3px; color: #e0e0e0; font-family: monospace; font-size: 13px; padding: 10px 12px; width: 100%; outline: none; margin-bottom: 12px; transition: border-color .2s; }
 #gemini-key:focus { border-color: #e63a00; }
-.key-save { background: #e63a00; color: #fff; border: none; border-radius: 3px; padding: 11px; font-family: ‘Rajdhani’, sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 2px; cursor: pointer; width: 100%; }
-
-/* LAYOUT */
+.key-save { background: #e63a00; color: #fff; border: none; border-radius: 3px; padding: 11px; font-family: 'Rajdhani', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 2px; cursor: pointer; width: 100%; }
 #main { display: flex; flex-direction: column; flex: 1; overflow-y: auto; }
 @media(min-width: 900px) { #main { display: grid; grid-template-columns: 360px 1fr; overflow: hidden; min-height: 0; } #left, #right { overflow-y: auto; } }
-
-/* LEFT */
 #left { background: #08080f; border-bottom: 1px solid #111; padding: 16px 14px; display: flex; flex-direction: column; gap: 14px; }
 @media(min-width: 900px) { #left { border-bottom: none; border-right: 1px solid #111; } }
 .sec-title { font-size: 10px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: #e63a00; margin-bottom: 8px; }
-
-/* CAR UPLOAD */
 .car-zone { border: 2px dashed #1c1c2e; border-radius: 6px; position: relative; overflow: hidden; background: #080812; aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; cursor: pointer; transition: all .2s; }
 .car-zone:hover { border-color: #e63a00; }
 .car-zone.has-img { border-style: solid; border-color: rgba(230,58,0,.5); }
 .car-zone img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
 .car-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
 .up-icon { font-size: 24px; color: #222; position: relative; z-index: 1; }
-.up-text { font-size: 11px; color: #252535; font-family: ‘Barlow’, sans-serif; text-align: center; position: relative; z-index: 1; line-height: 1.5; }
+.up-text { font-size: 11px; color: #252535; font-family: 'Barlow', sans-serif; text-align: center; position: relative; z-index: 1; line-height: 1.5; }
 .up-overlay { position: absolute; inset: 0; background: rgba(0,0,0,.6); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .2s; z-index: 2; }
 .car-zone.has-img:hover .up-overlay { opacity: 1; }
-.change-btn { background: rgba(230,58,0,.9); color: #fff; border: none; border-radius: 3px; padding: 7px 14px; font-family: ‘Rajdhani’, sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; }
-
-/* ACC GRID */
+.change-btn { background: rgba(230,58,0,.9); color: #fff; border: none; border-radius: 3px; padding: 7px 14px; font-family: 'Rajdhani', sans-serif; font-size: 12px; font-weight: 700; cursor: pointer; }
 #acc-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
 .acc-slot { background: #080812; border: 2px dashed #1c1c2e; border-radius: 4px; aspect-ratio: 1; position: relative; overflow: hidden; cursor: pointer; transition: all .2s; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
 .acc-slot:hover { border-color: #e63a00; }
 .acc-slot.has-img { border-style: solid; border-color: rgba(230,58,0,.4); }
 .acc-slot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
 .acc-slot input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-.acc-icon { font-size: 18px; color: #222; position: relative; z-index: 1; }
-.acc-lbl { font-size: 9px; color: #252535; font-family: ‘Barlow’, sans-serif; text-align: center; position: relative; z-index: 1; }
 .acc-overlay { position: absolute; inset: 0; background: rgba(0,0,0,.75); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; opacity: 0; transition: opacity .2s; z-index: 3; }
 .acc-slot.has-img:hover .acc-overlay { opacity: 1; }
-.acc-desc-bar { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,.85); padding: 4px 5px; font-size: 8px; font-family: ‘Barlow’, sans-serif; color: #999; z-index: 2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.ov-btn { border: none; border-radius: 2px; padding: 4px 8px; font-family: ‘Rajdhani’, sans-serif; font-size: 10px; font-weight: 700; cursor: pointer; width: 68px; }
+.acc-desc-bar { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,.85); padding: 4px 5px; font-size: 8px; font-family: 'Barlow', sans-serif; color: #999; z-index: 2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ov-btn { border: none; border-radius: 2px; padding: 4px 8px; font-family: 'Rajdhani', sans-serif; font-size: 10px; font-weight: 700; cursor: pointer; width: 68px; }
 .ov-edit { background: rgba(230,58,0,.9); color: #fff; }
 .ov-remove { background: rgba(60,60,60,.9); color: #aaa; }
 #add-btn { background: #080812; border: 2px dashed #1c1c2e; border-radius: 4px; aspect-ratio: 1; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; transition: all .2s; position: relative; }
 #add-btn:hover { border-color: #444; }
-
-/* INPUTS */
-.inp { background: #0e0e1c; border: 1px solid #1c1c2e; border-radius: 3px; color: #e0e0e0; font-family: ‘Barlow’, sans-serif; font-size: 13px; padding: 8px 11px; width: 100%; outline: none; transition: border-color .2s; }
+.inp { background: #0e0e1c; border: 1px solid #1c1c2e; border-radius: 3px; color: #e0e0e0; font-family: 'Barlow', sans-serif; font-size: 13px; padding: 8px 11px; width: 100%; outline: none; transition: border-color .2s; }
 .inp:focus { border-color: #e63a00; }
 .inp::placeholder { color: #2a2a3a; }
 textarea.inp { min-height: 56px; resize: vertical; }
 .divider { height: 1px; background: #141422; }
-
-/* GEN BTN */
-#gen-btn { background: linear-gradient(135deg, #e63a00, #b82400); color: #fff; border: none; border-radius: 3px; padding: 15px; font-family: ‘Rajdhani’, sans-serif; font-size: 17px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; cursor: pointer; transition: all .2s; width: 100%; }
+#gen-btn { background: linear-gradient(135deg, #e63a00, #b82400); color: #fff; border: none; border-radius: 3px; padding: 15px; font-family: 'Rajdhani', sans-serif; font-size: 17px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; cursor: pointer; transition: all .2s; width: 100%; }
 #gen-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(230,58,0,.4); }
 #gen-btn:disabled { opacity: .25; cursor: not-allowed; transform: none; }
-#hint { text-align: center; font-size: 11px; color: #252535; margin-top: 6px; font-family: ‘Barlow’, sans-serif; }
+#hint { text-align: center; font-size: 11px; color: #252535; margin-top: 6px; font-family: 'Barlow', sans-serif; }
 #err { padding: 11px; background: rgba(230,58,0,.06); border: 1px solid rgba(230,58,0,.25); border-radius: 3px; font-size: 11px; color: #ff6644; font-family: monospace; line-height: 1.6; word-break: break-all; max-height: 120px; overflow-y: auto; display: none; margin-top: 8px; }
-
-/* RIGHT */
 #right { padding: 20px 16px; display: flex; flex-direction: column; background: #06060e; min-height: 400px; }
 @media(min-width: 900px) { #right { padding: 22px 26px; } }
-
 #empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: #080812; border: 1px dashed #111120; border-radius: 6px; min-height: 400px; padding: 32px; }
 .e-icon { font-size: 64px; }
 .e-title { font-size: 16px; font-weight: 700; letter-spacing: 3px; color: #181826; text-transform: uppercase; text-align: center; }
 .e-steps { display: flex; flex-direction: column; gap: 8px; }
-.e-step { display: flex; align-items: center; gap: 10px; color: #1a1a28; font-size: 12px; font-family: ‘Barlow’, sans-serif; }
+.e-step { display: flex; align-items: center; gap: 10px; color: #1a1a28; font-size: 12px; font-family: 'Barlow', sans-serif; }
 .e-num { width: 20px; height: 20px; border: 1px solid #1a1a28; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; flex-shrink: 0; }
-
 #loading { flex: 1; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 18px; background: #080812; border: 1px solid #141422; border-radius: 6px; min-height: 400px; text-align: center; padding: 32px; }
 #load-msg { font-size: 14px; font-weight: 700; letter-spacing: 2px; color: #e63a00; }
-#load-sub { font-size: 12px; color: #252535; font-family: ‘Barlow’, sans-serif; }
+#load-sub { font-size: 12px; color: #252535; font-family: 'Barlow', sans-serif; }
 .spin { width: 44px; height: 44px; border: 3px solid #111; border-top-color: #e63a00; border-radius: 50%; animation: spin .7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
-
 #result { display: none; flex-direction: column; gap: 12px; animation: fadein .4s ease; }
 @keyframes fadein { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 
-/* SLIDER */
-#slider-wrap { border-radius: 6px; overflow: hidden; border: 1px solid #1a1a2e; background: #000; position: relative; user-select: none; touch-action: none; }
-#before-img { width: 100%; display: block; }
-#after-panel { position: absolute; top: 0; right: 0; bottom: 0; overflow: hidden; width: 50%; }
-#after-img { position: absolute; top: 0; left: 0; width: 100vw; max-width: none; height: 100%; object-fit: cover; }
-#slider-handle { position: absolute; top: 0; bottom: 0; left: 50%; transform: translateX(-50%); width: 44px; cursor: ew-resize; display: flex; align-items: center; justify-content: center; z-index: 10; }
-#slider-line { position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; background: #e63a00; transform: translateX(-50%); }
-#slider-circle { width: 36px; height: 36px; background: #e63a00; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px; font-weight: 700; box-shadow: 0 2px 12px rgba(0,0,0,.5); z-index: 1; flex-shrink: 0; }
-.s-lbl { position: absolute; top: 10px; font-size: 9px; font-weight: 700; letter-spacing: 2px; padding: 4px 8px; border-radius: 2px; text-transform: uppercase; font-family: ‘Rajdhani’, sans-serif; z-index: 5; }
+/* ── SLIDER ── */
+#slider-wrap {
+  position: relative;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #1a1a2e;
+  background: #000;
+  user-select: none;
+  touch-action: none;
+  line-height: 0;
+}
+#before-img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+#after-img {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* clip-path controlled by JS */
+}
+#slider-handle {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 2px;
+  background: #e63a00;
+  transform: translateX(-50%);
+  z-index: 10;
+  cursor: ew-resize;
+}
+#slider-circle {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 36px; height: 36px;
+  background: #e63a00;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 16px; font-weight: 700;
+  box-shadow: 0 2px 12px rgba(0,0,0,.5);
+}
+.s-lbl { position: absolute; top: 10px; font-size: 9px; font-weight: 700; letter-spacing: 2px; padding: 4px 8px; border-radius: 2px; text-transform: uppercase; font-family: 'Rajdhani', sans-serif; z-index: 5; pointer-events: none; }
 #lbl-before { left: 10px; background: rgba(0,0,0,.75); color: #aaa; }
-#lbl-after { right: 10px; background: rgba(230,58,0,.9); color: #fff; }
+#lbl-after  { right: 10px; background: rgba(230,58,0,.9); color: #fff; }
 
-/* RESULT BAR */
 #result-bar { padding: 14px 16px; background: #0a0a14; border: 1px solid #1a1a2e; border-top: none; border-radius: 0 0 6px 6px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 #result-car { font-size: 17px; font-weight: 700; }
 #result-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 4px; }
 .rtag { background: rgba(230,58,0,.1); border: 1px solid rgba(230,58,0,.2); border-radius: 3px; color: #ff5520; font-size: 9px; font-weight: 600; letter-spacing: 1px; padding: 2px 6px; }
 .rbtns { display: flex; gap: 6px; flex-shrink: 0; }
-.rbtn { border: none; border-radius: 3px; padding: 7px 12px; font-family: ‘Rajdhani’, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 1px; cursor: pointer; }
+.rbtn { border: none; border-radius: 3px; padding: 7px 12px; font-family: 'Rajdhani', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 1px; cursor: pointer; }
 .rbtn.save { background: #e63a00; color: #fff; }
 .rbtn.var { background: rgba(255,255,255,.1); color: #aaa; border: 1px solid rgba(255,255,255,.15); }
-
-#again-btn { background: linear-gradient(135deg,#e63a00,#b82400); color:#fff; border:none; border-radius:3px; padding:12px; font-family:‘Rajdhani’,sans-serif; font-size:14px; font-weight:700; letter-spacing:3px; text-transform:uppercase; cursor:pointer; width:100%; }
-
-#footer { border-top: 1px solid #0d0d1a; padding: 7px 20px; display: flex; justify-content: space-between; font-size: 10px; color: #1a1a28; font-family: ‘Barlow’, sans-serif; flex-shrink: 0; }
+#again-btn { background: linear-gradient(135deg,#e63a00,#b82400); color:#fff; border:none; border-radius:3px; padding:12px; font-family:'Rajdhani',sans-serif; font-size:14px; font-weight:700; letter-spacing:3px; text-transform:uppercase; cursor:pointer; width:100%; }
+#footer { border-top: 1px solid #0d0d1a; padding: 7px 20px; display: flex; justify-content: space-between; font-size: 10px; color: #1a1a28; font-family: 'Barlow', sans-serif; flex-shrink: 0; }
 </style>
-
 </head>
 <body>
 
@@ -160,35 +168,28 @@ textarea.inp { min-height: 56px; resize: vertical; }
 
 <div id="main">
   <div id="left">
-
-```
-<div>
-  <div class="sec-title">01 — Your Car Photo</div>
-  <div class="car-zone" id="car-zone">
-    <input type="file" id="car-input" accept="image/*,.heic,.heif" onchange="handleCar(event)"/>
-    <div class="up-icon">📷</div>
-    <div class="up-text">Tap to upload your car photo<br/>Side-on angle works best</div>
-    <div class="up-overlay"><button class="change-btn" onclick="event.stopPropagation();document.getElementById('car-input').click()">Change</button></div>
-  </div>
-  <input class="inp" id="car-desc" placeholder="e.g. 2024 Mitsubishi Triton GLS Gunmetal" style="margin-top:8px" oninput="checkReady()"/>
-</div>
-
-<div>
-  <div class="sec-title">02 — Accessories <span style="color:#333;font-size:9px">(UP TO 5)</span></div>
-  <div id="acc-grid"></div>
-</div>
-
-<div>
-  <div class="sec-title">03 — Notes <span style="color:#333;font-size:9px">(OPTIONAL)</span></div>
-  <textarea class="inp" id="notes" placeholder="e.g. keep exact background, photorealistic..."></textarea>
-</div>
-
-<div class="divider"></div>
-<button id="gen-btn" onclick="generate()" disabled>⚡ VISUALISE MY CAR</button>
-<p id="hint">Upload your car photo and at least one accessory</p>
-<div id="err"></div>
-```
-
+    <div>
+      <div class="sec-title">01 — Your Car Photo</div>
+      <div class="car-zone" id="car-zone">
+        <input type="file" id="car-input" accept="image/*,.heic,.heif" onchange="handleCar(event)"/>
+        <div class="up-icon">📷</div>
+        <div class="up-text">Tap to upload your car photo<br/>Side-on angle works best</div>
+        <div class="up-overlay"><button class="change-btn" onclick="event.stopPropagation();document.getElementById('car-input').click()">Change</button></div>
+      </div>
+      <input class="inp" id="car-desc" placeholder="e.g. 2024 Mitsubishi Triton GLS Gunmetal" style="margin-top:8px" oninput="checkReady()"/>
+    </div>
+    <div>
+      <div class="sec-title">02 — Accessories <span style="color:#333;font-size:9px">(UP TO 5)</span></div>
+      <div id="acc-grid"></div>
+    </div>
+    <div>
+      <div class="sec-title">03 — Notes <span style="color:#333;font-size:9px">(OPTIONAL)</span></div>
+      <textarea class="inp" id="notes" placeholder="e.g. keep exact background, photorealistic..."></textarea>
+    </div>
+    <div class="divider"></div>
+    <button id="gen-btn" onclick="generate()" disabled>⚡ VISUALISE MY CAR</button>
+    <p id="hint">Upload your car photo and at least one accessory</p>
+    <div id="err"></div>
   </div>
 
   <div id="right">
@@ -202,41 +203,33 @@ textarea.inp { min-height: 56px; resize: vertical; }
         <div class="e-step"><div class="e-num">4</div>Hit Visualise — AI does the rest</div>
       </div>
     </div>
-
-```
-<div id="loading">
-  <div class="spin"></div>
-  <div id="load-msg">Fitting your accessories...</div>
-  <div id="load-sub">Gemini is working — 15–30 seconds...</div>
-</div>
-
-<div id="result">
-  <div id="slider-wrap">
-    <img id="before-img" src="" alt="Before"/>
-    <div id="after-panel">
-      <img id="after-img" src="" alt="After"/>
+    <div id="loading">
+      <div class="spin"></div>
+      <div id="load-msg">Fitting your accessories...</div>
+      <div id="load-sub">Gemini is working — 15–30 seconds...</div>
     </div>
-    <div id="slider-handle">
-      <div id="slider-line"></div>
-      <div id="slider-circle">⇔</div>
+    <div id="result">
+      <div id="slider-wrap">
+        <img id="before-img" src="" alt="Before"/>
+        <img id="after-img"  src="" alt="After"/>
+        <div id="slider-handle">
+          <div id="slider-circle">⇔</div>
+        </div>
+        <div class="s-lbl" id="lbl-before">BEFORE</div>
+        <div class="s-lbl" id="lbl-after">AFTER</div>
+      </div>
+      <div id="result-bar">
+        <div>
+          <div id="result-car"></div>
+          <div id="result-tags"></div>
+        </div>
+        <div class="rbtns">
+          <button class="rbtn var" onclick="generate()">↺ Variation</button>
+          <button class="rbtn save" onclick="saveImg()">↓ Save</button>
+        </div>
+      </div>
+      <button id="again-btn" onclick="generate()">⚡ GENERATE ANOTHER VARIATION</button>
     </div>
-    <div class="s-lbl" id="lbl-before">BEFORE</div>
-    <div class="s-lbl" id="lbl-after">AFTER</div>
-  </div>
-  <div id="result-bar">
-    <div>
-      <div id="result-car"></div>
-      <div id="result-tags"></div>
-    </div>
-    <div class="rbtns">
-      <button class="rbtn var" onclick="generate()">↺ Variation</button>
-      <button class="rbtn save" onclick="saveImg()">↓ Save</button>
-    </div>
-  </div>
-  <button id="again-btn" onclick="generate()">⚡ GENERATE ANOTHER VARIATION</button>
-</div>
-```
-
   </div>
 </div>
 
@@ -248,12 +241,10 @@ textarea.inp { min-height: 56px; resize: vertical; }
 <script>
 const PROXY = 'https://carplai-proxy-production.up.railway.app';
 const MAX = 5;
-
 let carB64 = null, carMime = 'image/jpeg', carSrc = null;
 let accessories = [];
 let lastImg = null;
 
-// KEY
 function loadKey() {
   const k = localStorage.getItem('cp_key') || '';
   document.getElementById('gemini-key').value = k;
@@ -277,7 +268,6 @@ document.getElementById('key-modal').addEventListener('click', e => {
   if (e.target === document.getElementById('key-modal')) document.getElementById('key-modal').classList.remove('open');
 });
 
-// IMAGE COMPRESSION
 async function compress(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -303,7 +293,6 @@ async function compress(file) {
   });
 }
 
-// CAR UPLOAD
 async function handleCar(e) {
   const file = e.target.files[0]; if (!file) return;
   const dataUrl = await compress(file);
@@ -319,7 +308,6 @@ async function handleCar(e) {
   checkReady();
 }
 
-// ACC GRID
 function renderGrid() {
   const grid = document.getElementById('acc-grid');
   grid.innerHTML = '';
@@ -361,7 +349,6 @@ function editAcc(i) {
   if (d !== null) { accessories[i].desc = d; renderGrid(); }
 }
 
-// READY CHECK
 function checkReady() {
   const k = localStorage.getItem('cp_key') || '';
   const ready = k && carB64 && accessories.length > 0;
@@ -389,66 +376,47 @@ function showResult(imgData) {
   const carDesc = document.getElementById('car-desc').value.trim() || 'Your Car';
   document.getElementById('loading').style.display = 'none';
   document.getElementById('result').style.display = 'flex';
-
   document.getElementById('before-img').src = carSrc;
   document.getElementById('after-img').src = imgData;
   document.getElementById('result-car').textContent = carDesc;
   document.getElementById('result-tags').innerHTML = accessories.map(a => `<span class="rtag">${a.desc || 'Accessory'}</span>`).join('');
   lastImg = imgData;
-
   initSlider();
   document.getElementById('right').scrollIntoView({ behavior: 'smooth' });
 }
 
-// SLIDER
+// ── SLIDER ──────────────────────────────────────────
 function initSlider() {
-  const wrap = document.getElementById('slider-wrap');
-  const afterPanel = document.getElementById('after-panel');
-  const afterImg = document.getElementById('after-img');
-  const beforeImg = document.getElementById('before-img');
+  const wrap   = document.getElementById('slider-wrap');
+  const after  = document.getElementById('after-img');
   const handle = document.getElementById('slider-handle');
   let dragging = false;
 
-  // Sync after image width to container
-  function sync() {
-    const w = wrap.offsetWidth;
-    afterImg.style.width = w + 'px';
-    afterImg.style.left = '0';
-    afterImg.style.right = 'auto';
+  function applyPct(p) {
+    p = Math.max(0.02, Math.min(0.98, p));
+    // Clip after image: hide left portion, show right portion
+    after.style.clipPath = `inset(0 0 0 ${p * 100}%)`;
+    handle.style.left = (p * 100) + '%';
   }
-  beforeImg.onload = sync;
-  afterImg.onload = sync;
-  setTimeout(sync, 50);
-  setTimeout(sync, 300);
-  window.addEventListener('resize', sync);
-
-  function setPos(x) {
-    const rect = wrap.getBoundingClientRect();
-    let pct = (x - rect.left) / rect.width;
-    pct = Math.max(0.02, Math.min(0.98, pct));
-    // after panel reveals from the right as handle moves right
-    afterPanel.style.width = ((1 - pct) * 100) + '%';
-    afterPanel.style.right = '0';
-    afterPanel.style.left = 'auto';
-    newHandle.style.left = (pct * 100) + '%';
-  }
-
-  // Remove old listeners by cloning
-  const newHandle = handle.cloneNode(true);
-  handle.parentNode.replaceChild(newHandle, handle);
-
-  newHandle.addEventListener('mousedown', e => { dragging = true; e.preventDefault(); });
-  window.addEventListener('mousemove', e => { if (dragging) setPos(e.clientX); });
-  window.addEventListener('mouseup', () => { dragging = false; });
-  newHandle.addEventListener('touchstart', e => { dragging = true; e.preventDefault(); }, { passive: false });
-  window.addEventListener('touchmove', e => { if (dragging) setPos(e.touches[0].clientX); }, { passive: true });
-  window.addEventListener('touchend', () => { dragging = false; });
 
   // Start at 50%
-  afterPanel.style.width = '50%';
-  afterPanel.style.right = '0';
-  afterPanel.style.left = 'auto';
-  newHandle.style.left = '50%';
+  applyPct(0.5);
+
+  function getX(e) {
+    return e.touches ? e.touches[0].clientX : e.clientX;
+  }
+  function onMove(e) {
+    if (!dragging) return;
+    const rect = wrap.getBoundingClientRect();
+    applyPct((getX(e) - rect.left) / rect.width);
+  }
+
+  handle.onmousedown  = e => { dragging = true; e.preventDefault(); };
+  handle.ontouchstart = e => { dragging = true; e.preventDefault(); };
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('touchmove', onMove, { passive: true });
+  window.addEventListener('mouseup',  () => dragging = false);
+  window.addEventListener('touchend', () => dragging = false);
 }
 
 function saveImg() {
@@ -459,28 +427,22 @@ function saveImg() {
   a.click();
 }
 
-// GENERATE
 async function generate() {
   const key = localStorage.getItem('cp_key') || '';
   if (!key || !carB64 || !accessories.length) return;
   hideErr();
-
   const carDesc = document.getElementById('car-desc').value.trim() || 'the car in the photo';
   const notes = document.getElementById('notes').value.trim();
-
   try {
     let curB64 = carB64, curMime = carMime;
-
     for (let i = 0; i < accessories.length; i++) {
       const acc = accessories[i];
       const accDesc = acc.desc || 'accessory ' + (i + 1);
       const isLast = i === accessories.length - 1;
-
       setLoading(
         accessories.length === 1 ? 'Fitting ' + accDesc + '...' : 'Step ' + (i+1) + ' of ' + accessories.length + ': ' + accDesc + '...',
         'Fast rendering in progress...'
       );
-
       const prompt = `You are a professional automotive photo editor.
 
 IMAGE 1: The car — ${carDesc}
@@ -507,7 +469,6 @@ Output ONE photorealistic image with this accessory fitted exactly.`;
         { inline_data: { mime_type: curMime, data: curB64 } },
         { inline_data: { mime_type: acc.mime, data: acc.b64 } }
       ];
-
       const res = await fetch(PROXY + '/api/gemini', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -518,18 +479,14 @@ Output ONE photorealistic image with this accessory fitted exactly.`;
           generationConfig: { responseModalities: ['IMAGE', 'TEXT'] }
         })
       });
-
       const data = await res.json();
       if (data.error) throw new Error('Gemini ' + data.error.code + ': ' + data.error.message);
-
       const rParts = data.candidates?.[0]?.content?.parts || [];
       let got = false;
       for (const p of rParts) {
         if (p.inlineData?.data) { curB64 = p.inlineData.data; curMime = p.inlineData.mimeType || 'image/png'; got = true; break; }
       }
-
       if (!got) {
-        // Retry once
         const res2 = await fetch(PROXY + '/api/gemini', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -548,8 +505,6 @@ Output ONE photorealistic image with this accessory fitted exactly.`;
         if (!got) throw new Error('No image returned on step ' + (i+1) + ' after retry');
       }
     }
-
-    // Polish pass for 3+ accessories
     if (accessories.length >= 3) {
       setLoading('Final polish pass...', 'Final quality pass...');
       try {
@@ -574,9 +529,7 @@ Output ONE photorealistic image with this accessory fitted exactly.`;
         }
       } catch(e) { console.warn('Polish pass failed:', e); }
     }
-
     showResult('data:' + curMime + ';base64,' + curB64);
-
   } catch(e) {
     document.getElementById('loading').style.display = 'none';
     document.getElementById('empty').style.display = 'flex';
@@ -584,11 +537,9 @@ Output ONE photorealistic image with this accessory fitted exactly.`;
   }
 }
 
-// INIT
 renderGrid();
 loadKey();
 checkReady();
 </script>
-
 </body>
 </html>
